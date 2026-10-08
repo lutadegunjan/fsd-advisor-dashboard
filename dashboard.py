@@ -2,56 +2,45 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-page_title="FSD Advisor Directory",
-page_icon="📊",
-layout="wide",
+    page_title="FSD Advisor Directory",
+    page_icon="📊",
+    layout="wide",
 )
 
 DATA_FILE = "Submission File (Gunjan)_SUBMISSION.xlsx"
 SHEET_NAME = "FSD directory"
 
+
 @st.cache_data
 def load_data():
-df = pd.read_excel(DATA_FILE, sheet_name=SHEET_NAME, header=1, dtype=str)
-df = df.fillna("")
+    df = pd.read_excel(DATA_FILE, sheet_name=SHEET_NAME, header=1, dtype=str)
+    df = df.fillna("")
 
-```
-# Normalize column names from the author's template
-df = df.rename(columns={
-    "profile url": "profile_url",
-    "scraped by": "scraped_by",
-})
+    df = df.rename(columns={
+        "profile url": "profile_url",
+        "scraped by": "scraped_by",
+    })
 
-return df
-```
+    return df
+
 
 df = load_data()
-
-# -------------------------------------------------------------------
-
-# Header
-
-# -------------------------------------------------------------------
 
 st.title("FSD Advisor Directory")
 st.caption("United States Financial Advisor Directory")
 
 st.divider()
 
-# -------------------------------------------------------------------
-
-# Sidebar filters
-
-# -------------------------------------------------------------------
-
 st.sidebar.header("Filters")
 
+
 def options(column):
-values = sorted(
-v for v in df[column].dropna().unique()
-if str(v).strip()
-)
-return ["All"] + values
+    values = sorted(
+        v for v in df[column].dropna().unique()
+        if str(v).strip()
+    )
+    return ["All"] + values
+
 
 country = st.sidebar.selectbox("Country", options("country"))
 state = st.sidebar.selectbox("State", options("state"))
@@ -59,56 +48,48 @@ city = st.sidebar.selectbox("City", options("city"))
 zip_code = st.sidebar.selectbox("ZIP", options("zip"))
 
 website_filter = st.sidebar.selectbox(
-"Website",
-["All", "Yes", "No"]
+    "Website",
+    ["All", "Yes", "No"]
 )
 
 linkedin_filter = st.sidebar.selectbox(
-"LinkedIn",
-["All", "Yes", "No"]
+    "LinkedIn",
+    ["All", "Yes", "No"]
 )
 
 facebook_filter = st.sidebar.selectbox(
-"Facebook",
-["All", "Yes", "No"]
+    "Facebook",
+    ["All", "Yes", "No"]
 )
 
-# -------------------------------------------------------------------
-
-# Apply filters
-
-# -------------------------------------------------------------------
 
 filtered = df.copy()
 
 if country != "All":
-filtered = filtered[filtered["country"] == country]
+    filtered = filtered[filtered["country"] == country]
 
 if state != "All":
-filtered = filtered[filtered["state"] == state]
+    filtered = filtered[filtered["state"] == state]
 
 if city != "All":
-filtered = filtered[filtered["city"] == city]
+    filtered = filtered[filtered["city"] == city]
 
 if zip_code != "All":
-filtered = filtered[filtered["zip"] == zip_code]
+    filtered = filtered[filtered["zip"] == zip_code]
+
 
 def apply_presence_filter(data, column, choice):
-if choice == "Yes":
-return data[data[column].str.strip() != ""]
-elif choice == "No":
-return data[data[column].str.strip() == ""]
-return data
+    if choice == "Yes":
+        return data[data[column].str.strip() != ""]
+    elif choice == "No":
+        return data[data[column].str.strip() == ""]
+    return data
+
 
 filtered = apply_presence_filter(filtered, "website", website_filter)
 filtered = apply_presence_filter(filtered, "linkedin", linkedin_filter)
 filtered = apply_presence_filter(filtered, "facebook", facebook_filter)
 
-# -------------------------------------------------------------------
-
-# KPIs
-
-# -------------------------------------------------------------------
 
 total_firms = len(df)
 filtered_count = len(filtered)
@@ -118,6 +99,7 @@ unique_zips = filtered["zip"].replace("", pd.NA).nunique()
 firms_with_website = (filtered["website"].str.strip() != "").sum()
 firms_with_linkedin = (filtered["linkedin"].str.strip() != "").sum()
 firms_with_facebook = (filtered["facebook"].str.strip() != "").sum()
+
 
 st.subheader("Directory Overview")
 
@@ -135,21 +117,12 @@ k6.metric("Firms with Website", f"{firms_with_website:,}")
 k7.metric("Firms with LinkedIn", f"{firms_with_linkedin:,}")
 k8.metric("Firms with Facebook", f"{firms_with_facebook:,}")
 
+
 st.divider()
-
-# -------------------------------------------------------------------
-
-# Detailed table
-
-# -------------------------------------------------------------------
 
 st.subheader("Advisor Directory")
 
 display_df = filtered.copy()
-
-# Required Part 2 fields that do not exist in Part 1.
-
-# Keep them blank rather than enriching the source externally.
 
 display_df["CRD Number"] = ""
 display_df["Email Address"] = ""
@@ -158,9 +131,9 @@ display_df["Minimum Investable Assets"] = ""
 display_df["Firm Name"] = display_df["firm"]
 
 display_df["Address"] = (
-display_df["street_address"]
-.fillna("")
-.str.strip()
+    display_df["street_address"]
+    .fillna("")
+    .str.strip()
 )
 
 display_df["City"] = display_df["city"]
@@ -172,35 +145,33 @@ display_df["LinkedIn URL"] = display_df["linkedin"]
 display_df["Facebook URL"] = display_df["facebook"]
 
 table_columns = [
-"Firm Name",
-"CRD Number",
-"Address",
-"City",
-"State",
-"ZIP Code",
-"Phone Number",
-"Email Address",
-"Website URL",
-"LinkedIn URL",
-"Facebook URL",
-"Minimum Investable Assets",
+    "Firm Name",
+    "CRD Number",
+    "Address",
+    "City",
+    "State",
+    "ZIP Code",
+    "Phone Number",
+    "Email Address",
+    "Website URL",
+    "LinkedIn URL",
+    "Facebook URL",
+    "Minimum Investable Assets",
 ]
 
 display_df = display_df[table_columns]
 
-# Render the directory as an HTML table.
-
-# This avoids the hosted dataframe canvas rendering issue.
 
 st.markdown(
-display_df.to_html(
-index=False,
-escape=False,
-render_links=True,
-),
-unsafe_allow_html=True,
+    display_df.to_html(
+        index=False,
+        escape=False,
+        render_links=True,
+    ),
+    unsafe_allow_html=True,
 )
 
+
 st.caption(
-f"Showing {len(display_df):,} advisor records after applying filters."
+    f"Showing {len(display_df):,} advisor records after applying filters."
 )
