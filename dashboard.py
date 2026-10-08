@@ -180,7 +180,7 @@ display_df = display_df[table_columns]
 
 st.dataframe(
     display_df,
-    use_container_width=True,
+    width="stretch",
     height=600,
     hide_index=True,
     column_config={
