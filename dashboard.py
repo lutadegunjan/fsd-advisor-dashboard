@@ -7,7 +7,7 @@ st.set_page_config(
     layout="wide",
 )
 
-DATA_FILE = "Submission File (Gunjan)_FINAL.xlsx""
+DATA_FILE = "Submission File (Gunjan)_FINAL.xlsx"
 SHEET_NAME = "FSD directory"
 
 
