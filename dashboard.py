@@ -7,20 +7,13 @@ st.set_page_config(
     layout="wide",
 )
 
-DATA_FILE = "Submission File (Gunjan)_FINAL.xlsx"
+DATA_FILE = Path("final_profiles_contacts_repaired_playwright.csv")
 SHEET_NAME = "FSD directory"
 
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel(
-        DATA_FILE,
-        sheet_name=SHEET_NAME,
-        header=1,
-        dtype=str,
-    )
-
-    df = df.fillna("")
+    df = pd.read_csv(DATA_FILE, dtype=str).fillna("")
 
     df = df.rename(columns={
         "profile url": "profile_url",
